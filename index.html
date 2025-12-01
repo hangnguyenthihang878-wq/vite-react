@@ -1,13 +1,116 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giáng Sinh 🎄</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    height:100vh;
+    background: linear-gradient(to bottom right, #0f1c46, #2d4fa3);
+    font-family:'Poppins',sans-serif;
+    color:white;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    overflow:hidden;
+    text-align:center;
+}
+#title { font-size:2.6em; margin-bottom:20px; font-weight:bold; text-shadow:0 0 12px rgba(255,255,255,0.9); display:none; }
+.gift-box { width:200px; height:150px; background:#ff3b3b; border-radius:10px; position:relative; box-shadow:0 0 20px rgba(255,255,255,0.7); cursor:pointer; animation: glow 1.5s infinite alternate; }
+.gift-lid { width:220px; height:50px; background:#d92121; position:absolute; top:-40px; left:50%; transform:translateX(-50%); border-radius:10px; }
+.ribbon { width:30px; height:150px; background:gold; position:absolute; left:50%; top:0; transform:translateX(-50%); border-radius:5px; }
+.ribbon-horizontal { width:200px; height:25px; background:gold; position:absolute; top:50px; left:50%; transform:translateX(-50%); border-radius:5px; }
+@keyframes glow { from { box-shadow:0 0 10px #fff; } to { box-shadow:0 0 25px gold; } }
+#clickText { margin-top:20px; font-size:1.2em; animation: blink 1s infinite; }
+@keyframes blink { 0% {opacity:1;} 50% {opacity:.3;} 100% {opacity:1;} }
+#messages { display:none; margin-top:20px; }
+.line { min-height:30px; font-size:1.4em; margin:8px 0; text-shadow:0 0 7px rgba(255,255,255,0.9); }
+.snowflake { position:fixed; top:0; font-size:1em; animation:fall linear infinite; color:white; }
+@keyframes fall { 0% { transform:translateY(-10px); opacity:1; } 100% { transform:translateY(100vh); opacity:0; } }
+button.music { position:fixed; bottom:20px; right:20px; padding:15px; border:none; border-radius:50%; background:rgba(255,255,255,0.3); cursor:pointer; display:none; backdrop-filter:blur(4px); }
+</style>
+</head>
+<body>
+
+<div id="title">🎄 CHÚC MỪNG GIÁNG SINH 🎁</div>
+
+<div id="giftContainer">
+    <div class="gift-box" id="gift">
+        <div class="gift-lid"></div>
+        <div class="ribbon"></div>
+        <div class="ribbon-horizontal"></div>
+    </div>
+    <div id="clickText">🎁 Nhấn vào hộp quà 🎁</div>
+</div>
+
+<div id="messages">
+    <div class="line" id="l1"></div>
+    <div class="line" id="l2"></div>
+    <div class="line" id="l3"></div>
+    <div class="line" id="l4"></div>
+</div>
+
+<!-- Nhạc Giáng Sinh miễn phí bản quyền -->
+<audio id="bgMusic" loop>
+  <source src="https://www.bensound.com/bensound-music/bensound-christmas.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const gift = document.getElementById("gift");
+const clickText = document.getElementById("clickText");
+const title = document.getElementById("title");
+const messages = document.getElementById("messages");
+const music = document.getElementById("bgMusic");
+
+const lines = [
+    "✨ Chúc bạn có một mùa Noel thật ấm áp và an lành!",
+    "💖 Chúc bạn luôn vui vẻ và hạnh phúc bên người thân yêu!",
+    "🎅 Mong mọi điều tốt đẹp nhất sẽ đến với bạn!",
+    "🌟 Giáng Sinh vui vẻ – yêu thương ngập tràn!"
+];
+
+function typeWriter(text,id,speed,callback){
+    let i=0;
+    function typing(){
+        if(i<text.length){
+            document.getElementById(id).innerHTML+=text.charAt(i);
+            i++;
+            setTimeout(typing,speed);
+        } else if(callback){ setTimeout(callback,300); }
+    }
+    typing();
+}
+
+gift.onclick = ()=>{
+    gift.style.transform="scale(0)";
+    clickText.style.opacity="0";
+
+    // Phát nhạc ngay khi click hộp quà
+    music.play().catch(err=>console.log(err));
+
+    setTimeout(()=>{
+        document.getElementById("giftContainer").style.display="none";
+        title.style.display="block";
+        messages.style.display="block";
+        setInterval(createSnow,100);
+        typeWriter(lines[0],"l1",55,()=>{typeWriter(lines[1],"l2",55,()=>{typeWriter(lines[2],"l3",55,()=>{typeWriter(lines[3],"l4",55);});});});
+    },400);
+};
+
+function createSnow(){
+    const snow = document.createElement("div");
+    snow.classList.add("snowflake");
+    snow.textContent="❄";
+    snow.style.left=Math.random()*window.innerWidth+"px";
+    snow.style.fontSize=Math.random()*20+10+"px";
+    snow.style.animationDuration=(Math.random()*5+5)+"s";
+    document.body.appendChild(snow);
+    setTimeout(()=>snow.remove(),9000);
+}
+</script>
+
+</body>
+  </html>
