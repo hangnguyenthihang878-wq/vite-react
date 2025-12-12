@@ -1,116 +1,520 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Giáng Sinh 🎄</title>
-<style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body {
-    height:100vh;
-    background: linear-gradient(to bottom right, #0f1c46, #2d4fa3);
-    font-family:'Poppins',sans-serif;
-    color:white;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    overflow:hidden;
-    text-align:center;
-}
-#title { font-size:2.6em; margin-bottom:20px; font-weight:bold; text-shadow:0 0 12px rgba(255,255,255,0.9); display:none; }
-.gift-box { width:200px; height:150px; background:#ff3b3b; border-radius:10px; position:relative; box-shadow:0 0 20px rgba(255,255,255,0.7); cursor:pointer; animation: glow 1.5s infinite alternate; }
-.gift-lid { width:220px; height:50px; background:#d92121; position:absolute; top:-40px; left:50%; transform:translateX(-50%); border-radius:10px; }
-.ribbon { width:30px; height:150px; background:gold; position:absolute; left:50%; top:0; transform:translateX(-50%); border-radius:5px; }
-.ribbon-horizontal { width:200px; height:25px; background:gold; position:absolute; top:50px; left:50%; transform:translateX(-50%); border-radius:5px; }
-@keyframes glow { from { box-shadow:0 0 10px #fff; } to { box-shadow:0 0 25px gold; } }
-#clickText { margin-top:20px; font-size:1.2em; animation: blink 1s infinite; }
-@keyframes blink { 0% {opacity:1;} 50% {opacity:.3;} 100% {opacity:1;} }
-#messages { display:none; margin-top:20px; }
-.line { min-height:30px; font-size:1.4em; margin:8px 0; text-shadow:0 0 7px rgba(255,255,255,0.9); }
-.snowflake { position:fixed; top:0; font-size:1em; animation:fall linear infinite; color:white; }
-@keyframes fall { 0% { transform:translateY(-10px); opacity:1; } 100% { transform:translateY(100vh); opacity:0; } }
-button.music { position:fixed; bottom:20px; right:20px; padding:15px; border:none; border-radius:50%; background:rgba(255,255,255,0.3); cursor:pointer; display:none; backdrop-filter:blur(4px); }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatHoang - Chatbot Siêu Tốc (Gemini)</title>
+    <!-- Tải Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4f46e5; /* Indigo 600 */
+            --primary-light: #818cf8; /* Indigo 400 */
+            --bg-dark: #1f2937; /* Gray 800 */
+            --bg-light: #f9fafb; /* Gray 50 */
+            --text-color: #e5e7eb; /* Gray 200 */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .chatbot-container {
+            max-width: 600px;
+            width: 100%;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-radius: 1.5rem;
+            overflow: hidden;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+
+        /* Dark Mode Toggles */
+        .dark body {
+            background-color: #0d1117; /* Even darker background */
+        }
+        .dark .chatbot-container {
+            background-color: var(--bg-dark);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+        .dark .chat-header {
+            background-color: #111827; /* Gray 900 */
+            border-bottom: 1px solid #374151;
+        }
+        .dark .chat-input-area {
+            background-color: #111827;
+            border-top: 1px solid #374151;
+        }
+        .dark .message-user {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .dark .message-hoang {
+            background-color: #374151; /* Gray 700 */
+            color: var(--text-color);
+        }
+        .dark .message-hoang p {
+            color: var(--text-color);
+        }
+
+        /* Message Styling */
+        .messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            scroll-behavior: smooth;
+        }
+        .message-bubble {
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 1.25rem;
+            margin-bottom: 1rem;
+            word-wrap: break-word;
+        }
+        .message-user {
+            background-color: var(--primary-color);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 0.375rem;
+        }
+        .message-hoang {
+            background-color: var(--bg-light);
+            border: 1px solid #e5e7eb;
+            color: #1f2937;
+            margin-right: auto;
+            border-bottom-left-radius: 0.375rem;
+        }
+        .dark .message-hoang strong { color: var(--primary-light); }
+
+        /* Typing Indicator / Loading Dots */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            height: 44px; /* Ensure consistent height */
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            margin: 0 4px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .dark .typing-indicator .dot {
+            background-color: var(--primary-light);
+        }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        .dot:nth-child(3) { animation-delay: 0s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        /* Utility for Markdown rendering */
+        .message-content h1, .message-content h2 { font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1.25rem; }
+        .message-content p { margin-bottom: 0.5rem; line-height: 1.4; }
+        .message-content ul, .message-content ol { list-style-position: inside; margin-left: 1rem; margin-bottom: 0.5rem; }
+        .message-content ul { list-style-type: disc; }
+        .message-content ol { list-style-type: decimal; }
+        .message-content pre {
+            background-color: #1e293b;
+            color: #e5e7eb;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            margin-bottom: 0.5rem;
+        }
+        .message-content code {
+            background-color: #f3f4f6;
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            color: #1f2937;
+        }
+        .dark .message-content code {
+            background-color: #374151;
+            color: #d1d5db;
+        }
+        .message-content strong {
+            font-weight: 700;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 640px) {
+            .chatbot-container {
+                height: 100vh;
+                border-radius: 0;
+            }
+            .messages {
+                padding: 1rem;
+            }
+            .message-bubble {
+                max-width: 90%;
+            }
+        }
+    </style>
 </head>
-<body>
+<body class="dark">
+    <div class="chatbot-container">
+        <!-- Chat Header -->
+        <div class="chat-header p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div class="flex items-center">
+                <div class="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white text-xl font-bold mr-3">
+                    H
+                </div>
+                <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100">ChatHoang (Siêu Tốc)</h1>
+            </div>
+            <button id="darkModeToggle" class="p-2 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition">
+                <svg id="sunIcon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <svg id="moonIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            </button>
+        </div>
 
-<div id="title">🎄 CHÚC MỪNG GIÁNG SINH 🎁</div>
+        <!-- Messages Area -->
+        <div id="messages" class="messages bg-white dark:bg-gray-800">
+            <div class="message-bubble message-hoang mb-6">
+                <p><strong>Chào bạn!</strong> Tôi là ChatHoang, một chatbot được hỗ trợ bởi Gemini. Hãy hỏi tôi bất cứ điều gì!</p>
+            </div>
+            <!-- Messages will be injected here -->
+        </div>
 
-<div id="giftContainer">
-    <div class="gift-box" id="gift">
-        <div class="gift-lid"></div>
-        <div class="ribbon"></div>
-        <div class="ribbon-horizontal"></div>
+        <!-- Typing Indicator -->
+        <div id="typingIndicator" class="typing-indicator hidden px-4 pb-2 pt-1">
+            <div class="message-bubble message-hoang">
+                <div class="flex items-center">
+                    <span class="text-sm italic mr-2 text-gray-600 dark:text-gray-400">ChatHoang đang gõ</span>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-input-area p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div class="flex items-center space-x-3">
+                <input
+                    type="text"
+                    id="userInput"
+                    placeholder="Nhập tin nhắn của bạn..."
+                    class="flex-grow p-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 transition"
+                    autocomplete="off"
+                >
+                <button
+                    id="sendButton"
+                    class="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50 transition duration-150 ease-in-out disabled:bg-indigo-400"
+                    title="Gửi"
+                >
+                    <svg class="w-6 h-6 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                </button>
+            </div>
+        </div>
     </div>
-    <div id="clickText">🎁 Nhấn vào hộp quà 🎁</div>
-</div>
 
-<div id="messages">
-    <div class="line" id="l1"></div>
-    <div class="line" id="l2"></div>
-    <div class="line" id="l3"></div>
-    <div class="line" id="l4"></div>
-</div>
+    <script type="module">
+        // Thiết lập biến môi trường
+        const apiKey = ""; // API Key được Canvas cung cấp
+        const apiUrlBase = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        
+        // --- DOM Elements ---
+        const messagesContainer = document.getElementById('messages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const body = document.body;
+        const moonIcon = document.getElementById('moonIcon');
+        const sunIcon = document.getElementById('sunIcon');
 
-<!-- Nhạc Giáng Sinh miễn phí bản quyền -->
-<audio id="bgMusic" loop>
-  <source src="https://www.bensound.com/bensound-music/bensound-christmas.mp3" type="audio/mpeg">
-</audio>
+        let chatHistory = [];
+        let isSending = false;
 
-<script>
-const gift = document.getElementById("gift");
-const clickText = document.getElementById("clickText");
-const title = document.getElementById("title");
-const messages = document.getElementById("messages");
-const music = document.getElementById("bgMusic");
+        // --- Helper Functions ---
 
-const lines = [
-    "✨ Chúc bạn có một mùa Noel thật ấm áp và an lành!",
-    "💖 Chúc bạn luôn vui vẻ và hạnh phúc bên người thân yêu!",
-    "🎅 Mong mọi điều tốt đẹp nhất sẽ đến với bạn!",
-    "🌟 Giáng Sinh vui vẻ – yêu thương ngập tràn!"
-];
+        /**
+         * Chuyển đổi Markdown thành HTML cơ bản.
+         * Rất đơn giản, chỉ hỗ trợ **bold**, *italic*, new lines và `code blocks`.
+         * @param {string} markdownText
+         * @returns {string} HTML content
+         */
+        function markdownToHtml(markdownText) {
+            let html = markdownText;
 
-function typeWriter(text,id,speed,callback){
-    let i=0;
-    function typing(){
-        if(i<text.length){
-            document.getElementById(id).innerHTML+=text.charAt(i);
-            i++;
-            setTimeout(typing,speed);
-        } else if(callback){ setTimeout(callback,300); }
-    }
-    typing();
-}
+            // Chuyển đổi code blocks (```language ... ```) thành <pre>
+            html = html.replace(/```(\w+)?\n([\s\S]+?)```/g, (match, lang, code) => {
+                const language = lang || '';
+                const codeHtml = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return `<pre><code class="language-${language}">${codeHtml}</code></pre>`;
+            });
 
-gift.onclick = ()=>{
-    gift.style.transform="scale(0)";
-    clickText.style.opacity="0";
+            // Chuyển đổi inline code (`code`)
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
 
-    // Phát nhạc ngay khi click hộp quà
-    music.play().catch(err=>console.log(err));
+            // Chuyển đổi **bold**
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
-    setTimeout(()=>{
-        document.getElementById("giftContainer").style.display="none";
-        title.style.display="block";
-        messages.style.display="block";
-        setInterval(createSnow,100);
-        typeWriter(lines[0],"l1",55,()=>{typeWriter(lines[1],"l2",55,()=>{typeWriter(lines[2],"l3",55,()=>{typeWriter(lines[3],"l4",55);});});});
-    },400);
-};
+            // Chuyển đổi *italic*
+            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
 
-function createSnow(){
-    const snow = document.createElement("div");
-    snow.classList.add("snowflake");
-    snow.textContent="❄";
-    snow.style.left=Math.random()*window.innerWidth+"px";
-    snow.style.fontSize=Math.random()*20+10+"px";
-    snow.style.animationDuration=(Math.random()*5+5)+"s";
-    document.body.appendChild(snow);
-    setTimeout(()=>snow.remove(),9000);
-}
-</script>
+            // Chuyển đổi headings (Chỉ hỗ trợ ## và #)
+            html = html.replace(/^#\s(.*?)$/gm, '<h1>$1</h1>');
+            html = html.replace(/^##\s(.*?)$/gm, '<h2>$1</h2>');
 
+            // Chuyển đổi list items (Hỗ trợ đơn giản)
+            html = html.replace(/^\*\s(.*?)$/gm, '<li>$1</li>');
+            html = html.replace(/^-\s(.*?)$/gm, '<li>$1</li>');
+            html = html.replace(/^(\d+)\.\s(.*?)$/gm, '<li>$1. $2</li>');
+
+            // Bọc list items trong ul/ol (cần logic phức tạp hơn cho nested list)
+            html = html.replace(/(<li>.*?<\/li>)+/gs, (match) => {
+                const firstLi = match.match(/<li>/);
+                if (firstLi && firstLi[0] === '<li>') {
+                    // Cần kiểm tra kỹ loại list, ở đây ta đơn giản hóa là ul
+                    // Trong ứng dụng thực tế, nên dùng thư viện markdown
+                    if (match.includes(/^\d+\./gm)) {
+                        return `<ol>${match}</ol>`;
+                    } else {
+                        return `<ul>${match}</ul>`;
+                    }
+                }
+                return match;
+            });
+            
+            // Chuyển đổi new lines thành paragraphs
+            // Thay thế hai hoặc nhiều dòng mới bằng </p><p> và bọc toàn bộ trong <p>
+            html = html.split('\n\n').map(p => {
+                // Nếu là một tag đã được xử lý (pre, h1, h2, ul, ol), không bọc trong <p>
+                if (p.startsWith('<pre') || p.startsWith('<h') || p.startsWith('<ul') || p.startsWith('<ol')) {
+                    return p;
+                }
+                return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+            }).join('');
+            
+            return html;
+        }
+
+        /**
+         * Thêm tin nhắn vào container.
+         * @param {string} role 'user' hoặc 'model'
+         * @param {string} text Nội dung tin nhắn (chưa xử lý Markdown)
+         */
+        function addMessage(role, text) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message-bubble');
+            messageElement.classList.add(role === 'user' ? 'message-user' : 'message-hoang');
+            
+            const contentElement = document.createElement('div');
+            contentElement.classList.add('message-content');
+            
+            // Xử lý Markdown chỉ cho tin nhắn của bot
+            const htmlContent = role === 'model' ? markdownToHtml(text) : text.replace(/\n/g, '<br>');
+            contentElement.innerHTML = htmlContent;
+            
+            messageElement.appendChild(contentElement);
+            messagesContainer.appendChild(messageElement);
+            
+            // Cuộn xuống cuối
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        /**
+         * Hiện/Ẩn chỉ báo đang gõ.
+         * @param {boolean} visible
+         */
+        function setTypingIndicator(visible) {
+            typingIndicator.classList.toggle('hidden', !visible);
+            isSending = visible;
+            sendButton.disabled = visible;
+            userInput.disabled = visible;
+            if (visible) {
+                // Cuộn xuống để thấy indicator
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }
+
+        // Thực hiện API call với exponential backoff
+        async function fetchWithBackoff(url, options, maxRetries = 5) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) {
+                        return response;
+                    }
+
+                    // Xử lý lỗi 429 (Too Many Requests) hoặc các lỗi server khác
+                    if (response.status === 429 || response.status >= 500) {
+                        throw new Error(`API returned status ${response.status}. Retrying...`);
+                    }
+                    
+                    // Đối với các lỗi khác (ví dụ: 400 Bad Request), dừng lại
+                    const errorJson = await response.json();
+                    console.error("API Error Response:", errorJson);
+                    throw new Error(`API Error: ${response.status} - ${errorJson.error.message}`);
+
+                } catch (error) {
+                    console.error(`Attempt ${i + 1} failed:`, error.message);
+                    if (i === maxRetries - 1) {
+                        throw new Error("Failed to fetch from API after multiple retries.");
+                    }
+                    // Exponential backoff
+                    const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+
+        /**
+         * Gửi truy vấn đến API Gemini.
+         * @param {string} query
+         */
+        async function sendQueryToGemini(query) {
+            setTypingIndicator(true);
+
+            // Thêm query của người dùng vào lịch sử chat và payload
+            chatHistory.push({ role: "user", parts: [{ text: query }] });
+            
+            // System instruction để định hình persona của ChatHoang
+            const systemPrompt = "Bạn là ChatHoang, một trợ lý ảo siêu tốc và thân thiện. Hãy trả lời các câu hỏi bằng tiếng Việt, sử dụng phong cách trò chuyện, nhiệt tình và chuyên nghiệp. Bạn được hỗ trợ bởi mô hình Gemini, nên hãy luôn cung cấp thông tin chính xác và hữu ích. Giữ câu trả lời ngắn gọn và trực tiếp nếu có thể.";
+
+            const payload = {
+                contents: chatHistory,
+                // Luôn sử dụng Google Search grounding để đảm bảo tính thời sự và siêu tốc
+                tools: [{ "google_search": {} }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+                // Giảm thiểu maxOutputTokens để khuyến khích câu trả lời siêu tốc (ngắn gọn hơn)
+                generationConfig: {
+                    maxOutputTokens: 1024,
+                }
+            };
+            
+            const options = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            };
+
+            try {
+                const response = await fetchWithBackoff(apiUrlBase, options);
+                const result = await response.json();
+                
+                const candidate = result.candidates?.[0];
+                let responseText = "Xin lỗi, tôi không thể tạo ra phản hồi lúc này. Vui lòng thử lại.";
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    responseText = candidate.content.parts[0].text;
+                }
+                
+                // Thêm phản hồi của bot vào lịch sử chat
+                chatHistory.push({ role: "model", parts: [{ text: responseText }] });
+                
+                // Hiển thị tin nhắn của bot
+                addMessage('model', responseText);
+
+                // Kiểm tra và hiển thị nguồn trích dẫn nếu có (tùy chọn)
+                const groundingMetadata = candidate?.groundingMetadata;
+                if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                    const sources = groundingMetadata.groundingAttributions
+                        .map(attr => ({
+                            uri: attr.web?.uri,
+                            title: attr.web?.title,
+                        }))
+                        .filter(source => source.uri && source.title);
+                    
+                    if (sources.length > 0) {
+                        // Tạo một thông báo nguồn trích dẫn
+                        let sourceText = "\n\n---\n**Nguồn (Siêu Tốc):**\n";
+                        sources.slice(0, 3).forEach((s, index) => {
+                            // Cần phải có một cách để hiển thị link mà không bị lỗi Markdown rendering
+                            // Ở đây ta hiển thị text đơn giản
+                            sourceText += `${index + 1}. ${s.title} (nguồn trích dẫn)\n`;
+                        });
+                        // Thêm nguồn trích dẫn vào message cuối cùng (làm mới nội dung)
+                        // Trong trường hợp này, ta chỉ đơn giản là append text
+                        addMessage('model', sourceText); 
+                    }
+                }
+
+            } catch (error) {
+                console.error("Lỗi API call:", error);
+                const errorMessage = `Lỗi hệ thống: ${error.message}. Vui lòng kiểm tra API Key hoặc thử lại sau.`;
+                addMessage('model', errorMessage);
+                // Loại bỏ tin nhắn lỗi khỏi lịch sử chat nếu nó không phải là phản hồi thực sự của model
+                chatHistory.pop(); 
+
+            } finally {
+                setTypingIndicator(false);
+            }
+        }
+
+        /**
+         * Xử lý sự kiện gửi tin nhắn.
+         */
+        function handleSendMessage() {
+            const query = userInput.value.trim();
+            if (!query || isSending) return;
+
+            // Xóa nội dung input và reset
+            userInput.value = '';
+            
+            // Thêm tin nhắn của người dùng vào UI
+            addMessage('user', query);
+
+            // Gửi query đến bot
+            sendQueryToGemini(query);
+        }
+
+        // --- Event Listeners ---
+        sendButton.addEventListener('click', handleSendMessage);
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+            }
+        });
+
+        // --- Dark Mode Logic ---
+        function enableDarkMode() {
+            body.classList.add('dark');
+            moonIcon.classList.add('hidden');
+            sunIcon.classList.remove('hidden');
+        }
+
+        function disableDarkMode() {
+            body.classList.remove('dark');
+            sunIcon.classList.add('hidden');
+            moonIcon.classList.remove('hidden');
+        }
+
+        darkModeToggle.addEventListener('click', () => {
+            if (body.classList.contains('dark')) {
+                disableDarkMode();
+            } else {
+                enableDarkMode();
+            }
+        });
+        
+        // Thiết lập Dark Mode mặc định khi tải (vì body có class="dark")
+        window.onload = function() {
+            if (body.classList.contains('dark')) {
+                 enableDarkMode();
+            } else {
+                disableDarkMode();
+            }
+        };
+
+    </script>
 </body>
 </html>
