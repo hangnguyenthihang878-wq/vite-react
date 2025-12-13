@@ -2,104 +2,106 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>cmChatHoang - Chatbot AI</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>cmChatHoang</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body {
-  font-family: Arial, sans-serif;
-  background: #eef2f7;
+  background: linear-gradient(135deg,#667eea,#764ba2);
+  font-family: Arial;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
 }
-#chatbox {
-  max-width: 420px;
-  margin: 30px auto;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-  padding: 15px;
+.chat {
+  width:360px;
+  background:#fff;
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 20px 40px rgba(0,0,0,.3);
 }
-#messages {
-  height: 350px;
-  overflow-y: auto;
-  border: 1px solid #ddd;
-  padding: 10px;
-  margin-bottom: 10px;
+.header {
+  background:#4f46e5;
+  color:#fff;
+  padding:14px;
+  text-align:center;
+  font-weight:bold;
+}
+.messages {
+  height:360px;
+  padding:12px;
+  overflow-y:auto;
 }
 .msg {
-  margin: 6px 0;
+  margin:8px 0;
+  padding:10px 14px;
+  border-radius:14px;
+  max-width:80%;
 }
 .user {
-  text-align: right;
-  color: #0d6efd;
+  background:#4f46e5;
+  color:#fff;
+  margin-left:auto;
 }
 .bot {
-  text-align: left;
-  color: #222;
+  background:#f1f5f9;
+}
+.input {
+  display:flex;
+  border-top:1px solid #ddd;
 }
 input {
-  width: 75%;
-  padding: 8px;
+  flex:1;
+  padding:12px;
+  border:none;
+  outline:none;
 }
 button {
-  padding: 8px 12px;
+  background:#4f46e5;
+  color:#fff;
+  border:none;
+  padding:12px 18px;
 }
 </style>
 </head>
 <body>
 
-<div id="chatbox">
-  <h3>🤖 cmChatHoang</h3>
-  <div id="messages"></div>
-  <input id="input" placeholder="Nhập câu hỏi bằng tiếng Việt..." />
-  <button onclick="send()">Gửi</button>
+<div class="chat">
+  <div class="header">🤖 cmChatHoang</div>
+  <div class="messages" id="messages"></div>
+  <div class="input">
+    <input id="input" placeholder="Nhập câu hỏi..." />
+    <button onclick="send()">Gửi</button>
+  </div>
 </div>
 
 <script>
-const API_KEY = "YOUR_API_KEY_HERE";
-
 async function send() {
   const input = document.getElementById("input");
   const text = input.value.trim();
   if (!text) return;
 
-  addMsg(text, "user");
+  add(text,"user");
   input.value = "";
 
-  addMsg("⏳ cmChatHoang đang suy nghĩ...", "bot");
+  add("Đang trả lời...","bot");
 
-  try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + API_KEY
-      },
-      body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        messages: [
-          { role: "system", content: "Bạn là chatbot AI tiếng Việt tên cmChatHoang, trả lời lịch sự, rõ ràng, dễ hiểu." },
-          { role: "user", content: text }
-        ],
-        temperature: 0.6
-      })
-    });
+  const res = await fetch("chat.php", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ message:text })
+  });
 
-    const data = await res.json();
-    document.getElementById("messages").lastChild.remove();
-
-    addMsg(data.choices[0].message.content, "bot");
-
-  } catch (e) {
-    addMsg("❌ Lỗi kết nối API", "bot");
-  }
+  const data = await res.json();
+  document.getElementById("messages").lastChild.remove();
+  add(data.choices[0].message.content,"bot");
 }
 
-function addMsg(text, cls) {
-  const div = document.createElement("div");
-  div.className = "msg " + cls;
-  div.innerText = text;
+function add(text,cls){
+  const div=document.createElement("div");
+  div.className="msg "+cls;
+  div.innerText=text;
   document.getElementById("messages").appendChild(div);
-  document.getElementById("messages").scrollTop =
-    document.getElementById("messages").scrollHeight;
 }
 </script>
 
