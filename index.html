@@ -1,1 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>cmChatHoang - Chatbot AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #eef2f7;
+}
+#chatbox {
+  max-width: 420px;
+  margin: 30px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+  padding: 15px;
+}
+#messages {
+  height: 350px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+.msg {
+  margin: 6px 0;
+}
+.user {
+  text-align: right;
+  color: #0d6efd;
+}
+.bot {
+  text-align: left;
+  color: #222;
+}
+input {
+  width: 75%;
+  padding: 8px;
+}
+button {
+  padding: 8px 12px;
+}
+</style>
+</head>
+<body>
 
+<div id="chatbox">
+  <h3>🤖 cmChatHoang</h3>
+  <div id="messages"></div>
+  <input id="input" placeholder="Nhập câu hỏi bằng tiếng Việt..." />
+  <button onclick="send()">Gửi</button>
+</div>
+
+<script>
+const API_KEY = "YOUR_API_KEY_HERE";
+
+async function send() {
+  const input = document.getElementById("input");
+  const text = input.value.trim();
+  if (!text) return;
+
+  addMsg(text, "user");
+  input.value = "";
+
+  addMsg("⏳ cmChatHoang đang suy nghĩ...", "bot");
+
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + API_KEY
+      },
+      body: JSON.stringify({
+        model: "gpt-4.1-mini",
+        messages: [
+          { role: "system", content: "Bạn là chatbot AI tiếng Việt tên cmChatHoang, trả lời lịch sự, rõ ràng, dễ hiểu." },
+          { role: "user", content: text }
+        ],
+        temperature: 0.6
+      })
+    });
+
+    const data = await res.json();
+    document.getElementById("messages").lastChild.remove();
+
+    addMsg(data.choices[0].message.content, "bot");
+
+  } catch (e) {
+    addMsg("❌ Lỗi kết nối API", "bot");
+  }
+}
+
+function addMsg(text, cls) {
+  const div = document.createElement("div");
+  div.className = "msg " + cls;
+  div.innerText = text;
+  document.getElementById("messages").appendChild(div);
+  document.getElementById("messages").scrollTop =
+    document.getElementById("messages").scrollHeight;
+}
+</script>
+
+</body>
+</html>
