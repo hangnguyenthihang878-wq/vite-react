@@ -2,107 +2,82 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>ChatHoang</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Đồng hồ Việt Nam 🇻🇳</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body {
-  background: linear-gradient(135deg,#667eea,#764ba2);
-  font-family: Arial;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
-.chat {
-  width:360px;
-  background:#fff;
-  border-radius:16px;
-  overflow:hidden;
-  box-shadow:0 20px 40px rgba(0,0,0,.3);
-}
-.header {
-  background:#4f46e5;
-  color:#fff;
-  padding:14px;
-  text-align:center;
-  font-weight:bold;
-}
-.messages {
-  height:360px;
-  padding:12px;
-  overflow-y:auto;
-}
-.msg {
-  margin:8px 0;
-  padding:10px 14px;
-  border-radius:14px;
-  max-width:80%;
-}
-.user {
-  background:#4f46e5;
-  color:#fff;
-  margin-left:auto;
-}
-.bot {
-  background:#f1f5f9;
-}
-.input {
-  display:flex;
-  border-top:1px solid #ddd;
-}
-input {
-  flex:1;
-  padding:12px;
-  border:none;
-  outline:none;
-}
-button {
-  background:#4f46e5;
-  color:#fff;
-  border:none;
-  padding:12px 18px;
-}
+    body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #ff0000, #ffd700);
+        font-family: 'Segoe UI', Tahoma, sans-serif;
+        color: white;
+    }
+
+    .clock-box {
+        background: rgba(0,0,0,0.3);
+        padding: 30px 40px;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    .time {
+        font-size: 48px;
+        font-weight: bold;
+        letter-spacing: 2px;
+    }
+
+    .date {
+        margin-top: 10px;
+        font-size: 20px;
+    }
+
+    .zone {
+        margin-top: 5px;
+        font-size: 14px;
+        opacity: 0.8;
+    }
 </style>
 </head>
+
 <body>
 
-<div class="chat">
-  <div class="header">🤖 cmChatHoang</div>
-  <div class="messages" id="messages"></div>
-  <div class="input">
-    <input id="input" placeholder="Nhập câu hỏi..." />
-    <button onclick="send()">Gửi</button>
-  </div>
+<div class="clock-box">
+    <div class="time" id="time">--:--:--</div>
+    <div class="date" id="date">---</div>
+    <div class="zone">Giờ Việt Nam (Asia/Ho_Chi_Minh)</div>
 </div>
 
 <script>
-async function send() {
-  const input = document.getElementById("input");
-  const text = input.value.trim();
-  if (!text) return;
+function updateVietnamClock() {
+    const now = new Date();
 
-  add(text,"user");
-  input.value = "";
+    const timeFormatter = new Intl.DateTimeFormat('vi-VN', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
 
-  add("Đang trả lời...","bot");
+    const dateFormatter = new Intl.DateTimeFormat('vi-VN', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        weekday: 'long',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
 
-  const res = await fetch("chat.php", {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({ message:text })
-  });
-
-  const data = await res.json();
-  document.getElementById("messages").lastChild.remove();
-  add(data.choices[0].message.content,"bot");
+    document.getElementById('time').innerText = timeFormatter.format(now);
+    document.getElementById('date').innerText = dateFormatter.format(now);
 }
 
-function add(text,cls){
-  const div=document.createElement("div");
-  div.className="msg "+cls;
-  div.innerText=text;
-  document.getElementById("messages").appendChild(div);
-}
+updateVietnamClock();
+setInterval(updateVietnamClock, 1000);
 </script>
 
 </body>
