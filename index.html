@@ -15,6 +15,7 @@
         background: linear-gradient(135deg, #ff0000, #ffd700);
         font-family: 'Segoe UI', Tahoma, sans-serif;
         color: white;
+        position: relative;
     }
 
     .clock-box {
@@ -41,6 +42,13 @@
         font-size: 14px;
         opacity: 0.8;
     }
+
+    .copyright {
+        position: absolute;
+        bottom: 8px;
+        font-size: 11px;
+        opacity: 0.6;
+    }
 </style>
 </head>
 
@@ -50,6 +58,8 @@
     <div class="date" id="date">---</div>
     <div class="zone">Giờ Việt Nam (Asia/Ho_Chi_Minh)</div>
 </div>
+
+<div class="copyright">© Copyright Hoang</div>
 
 <script>
 function updateVietnamClock() {
